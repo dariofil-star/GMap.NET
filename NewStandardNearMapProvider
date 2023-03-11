@@ -1,0 +1,51 @@
+public class NewStandardNearMapProvider : NearMapProviderBase
+    {
+        public static readonly NewStandardNearMapProvider Instance;
+        private readonly Guid id = new Guid("{782F60F8-681D-440D-B353-56E165ACDFAF}");
+        private readonly string name = "NewStandardApiNearMap";
+        public static string ApiKey { get; set; }
+        private static string UrlFormat
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(ApiKey)) 
+                    return "https://api.nearmap.com/tiles/v3/Vert/{0}/{1}/{2}.jpg?tertiary=satellite&httpauth=false";
+
+                return $"https://api.nearmap.com/tiles/v3/Vert/{{0}}/{{1}}/{{2}}.jpg?tertiary=satellite&httpauth=false&apikey={ApiKey}";
+            }
+        }  
+
+        private NewStandardNearMapProvider()
+        {
+            MaxZoom = 21;
+            
+            RefererUrl = "http://www.nearmap.com/";
+        }
+
+        static NewStandardNearMapProvider() => Instance = new NewStandardNearMapProvider();
+
+        public override Guid Id => id;
+
+        public override string Name => name;
+
+        public override PureImage GetTileImage(GPoint pos, int zoom)
+        {
+            try
+            {
+                return GetTileImageUsingHttp(MakeTileImageUrl(pos, zoom, LanguageStr));
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+
+            return null;
+        } 
+
+        private string MakeTileImageUrl(GPoint pos, int zoom, string language)
+        {
+            var r = string.Format(UrlFormat, zoom, pos.X, pos.Y);
+            Trace.WriteLine(r);
+            return r;
+        }
+    }
